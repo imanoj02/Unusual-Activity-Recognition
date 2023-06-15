@@ -1,0 +1,97 @@
+The first few lines import the necessary libraries: 
+```
+import cv2
+import numpy as np 
+from keras.models import load_model
+import argparse
+from PIL import Image
+import imutils
+```
+- `cv2` is the OpenCV library used for image and video processing.
+- `numpy` is used for numerical computations.
+- `keras` is a high-level neural networks API used for building and training models.
+- `argparse` is used for parsing command-line arguments.
+- `PIL` is the Python Imaging Library used for image processing.
+- `imutils` is a library containing convenience functions for OpenCV.
+
+The following code defines a function called `mean_squared_loss` that calculates the mean squared loss between two inputs:
+```
+def mean_squared_loss(x1,x2):
+    difference=x1-x2
+    a,b,c,d,e=difference.shape
+    n_samples=a*b*c*d*e
+    sq_difference=difference**2
+    Sum=sq_difference.sum()
+    distance=np.sqrt(Sum)
+    mean_distance=distance/n_samples
+
+    return mean_distance
+```
+This function is used later in the script to calculate the mean squared loss between the input and output of the pre-trained model.
+
+The next line loads a pre-trained Keras model from a saved file:
+```
+model=load_model("saved_model.h5")
+```
+This model is used later in the script to predict the output for a given input.
+
+The following lines open a video file using OpenCV and check if it was successfully opened:
+```
+cap = cv2.VideoCapture("test_video.mp4")
+print(cap.isOpened())
+```
+If the video file was successfully opened, `cap.isOpened()` will return `True`.
+
+The next part of the code contains a loop that reads each frame of the video, processes it, and predicts its output using the pre-trained model:
+```
+while cap.isOpened():
+    imagedump=[]
+    ret,frame=cap.read()
+
+    for i in range(10):
+        ret,frame=cap.read()
+        image = imutils.resize(frame,width=1000,height=1200)
+
+        frame=cv2.resize(frame, (227,227), interpolation = cv2.INTER_AREA)
+        gray=0.2989*frame[:,:,0]+0.5870*frame[:,:,1]+0.1140*frame[:,:,2]
+        gray=(gray-gray.mean())/gray.std()
+        gray=np.clip(gray,0,1)
+        imagedump.append(gray)
+
+    imagedump=np.array(imagedump)
+
+    imagedump.resize(227,227,10)
+    imagedump=np.expand_dims(imagedump,axis=0)
+    imagedump=np.expand_dims(imagedump,axis=4)
+
+    output=model.predict(imagedump)
+```
+For each frame, it reads and resizes it using `imutils.resize()`. It then resizes it again using `cv2.resize()` to a size of 227x227 pixels, converts it to grayscale, normalizes it, and appends it to a list called `imagedump`. After processing ten frames, it converts the list to a NumPy array and reshapes it to a size of 227x227x10. It then expands the dimensions of the array to be compatible with the input shape of the pre-trained model. Finally, it passes the input to the model and predicts its output.
+
+The next part of the code calculates the mean squared loss between the input and output using the previously defined `mean_squared_loss()` function:
+```
+loss=mean_squared_loss(imagedump,output)
+```
+If the loss is greater than a threshold value of 0.00068, it overlays text on the video frame indicating an abnormal event:
+```
+if loss>0.00068:
+    print('Abnormal Event Detected')
+    cv2.putText(image,"Abnormal Event",(220,100),cv2.FONT_HERSHEY_SIMPLEX,2,(0,0,255),4)
+```
+Finally, if the user presses 'q' or the end of the video is reached, the script stops:
+```
+if cv2.waitKey(10) & 0xFF==ord('q'):
+    break
+
+cap.release()
+cv2.destroyAllWindows()
+
+
+
+
+This code is a Python script for detecting abnormal events in a video using a pre-trained deep learning model. It uses OpenCV, NumPy, Keras, argparse, PIL, and imutils libraries. 
+
+The script loads a pre-trained deep learning model from a saved file and reads a video file. It then processes each frame of the video by resizing it, converting it to grayscale, normalizing it, and appending it to a list. After processing ten frames, it passes the list to the pre-trained model and calculates the mean squared loss between the input and output. If the loss is greater than a threshold value, it considers it an abnormal event and overlays a text on the video frame. If the user presses 'q' or the end of the video is reached, the script stops.
+
+
+```
