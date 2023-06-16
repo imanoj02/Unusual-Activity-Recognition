@@ -19,7 +19,7 @@ These libraries are used for image and video processing, as well as building and
 store_image=[]
 train_path='./train'
 fps=5
-```
+``
 
 3. The code creates a directory called `train_images_path` and loops through each video in the `train_videos` list. For each video, it extracts frames from the video using `ffmpeg` and stores them in the `train_images_path` directory. It then loops through each image in the `train_images_path` directory and stores it in the `store_image` list after preprocessing.
 ```
